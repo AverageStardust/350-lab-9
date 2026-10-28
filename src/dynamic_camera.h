@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 
+#include "SFML/System/Vector2.hpp"
 #include "camera.h"
 
 constexpr float INF = std::numeric_limits<float>::infinity();
@@ -37,16 +38,12 @@ struct DynamicCamera {
                 const sf::Vector2f& trackedPosWorld,      // world coords of player to track
                 const sf::Vector2f& trackedVelocityWorld  // world velocity of player to track
     ) {
-        // TODO: (HINTS/outline)
-        // collect statistics on the player position and velocity in (normalized, if you like)
-        // window coordinates. Compute lookAhead distance in world coords, adjusting for
-        // if the player is moving left or right.
-        // Now update lookAhead state using an EMA over its previous state and the lookAhead world
-        // vector. Then determine if the player is in the dead zone, soft rejection zone, or hard
-        // rejection zone. For each, perform EMA on the delta of the camera displacement (ignoring
-        // lookahead) appropriately. Next,
-        // set the camera center by offsetting the cameraUnadjustedCenter, combining lookAhead.
-        // Finally update cameraUnadjustedCenter, but without lookahead.
+        float dir = trackedVelocityWorld.x > 0.f ? 1 : (trackedVelocityWorld.x < 0.f ? -1 : 0);
+        float lookahead = dir * camera.windowPercentToWorldDist({lookAhead, 0.f}).x;
+
+        // update cameraUnadjustedCenter
+
+        camera.setCameraCenter(cameraUnadjustedCenter + sf::Vector2f(lookAhead, 0));
     }
 
     float alpha;  // alpha to use for damping of camera position, *as well as* for smoothing of
@@ -61,4 +58,4 @@ struct DynamicCamera {
     mutable float lookaheadState{};  // the EMA of the accumulated lookahead offset in world coords
 };
 
-#endif // DYNAMIC_CAMERA_H
+#endif  // DYNAMIC_CAMERA_H
